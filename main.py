@@ -1,11 +1,16 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from scapy.all import sniff
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
+
+from database import SessionLocal
 from utils import process_pcap, validate_pcap
 from io import BytesIO
 import matplotlib.pyplot as plt
 from fastapi.responses import StreamingResponse
+from database import Packet, get_db
+
 
 
 app = FastAPI()
@@ -65,19 +70,23 @@ async def visualize_pcap(file: UploadFile = File(...)):
          description="This endpoint captures network packets in real-time on a specified interface. "
                      "You can specify the number of packets to capture and analyze their details."
          )
-def monitor_traffic(interface: str = "eth0", count: int = 10):
-    if count <= 0:
-        raise HTTPException(status_code=400, detail="Count must be a positive integer")
-
+def monitor_traffic(interface: str = "eth0", count: int = 10, db: Session = Depends(get_db)):
     try:
         packets = sniff(count=count, iface=interface)
+        for pkt in packets:
+            if pkt.haslayer("IP"):
+                new_packet = Packet(
+                    src_ip=pkt["IP"].src,
+                    dst_ip=pkt["IP"].dst,
+                    protocol=str(pkt["IP"].proto)
+                )
+                db.add(new_packet)
+        db.commit()
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error capturing packets: {str(e)}")
 
-    captured = [{"src": pkt["IP"].src, "dst": pkt["IP"].dst, "proto": pkt["IP"].proto}
-                for pkt in packets if pkt.haslayer("IP")]
+    return {"message": f"Captured and saved {count} packets to the database"}
 
-    return {"captured_packets": captured}
 
 
 @app.exception_handler(Exception)
@@ -86,3 +95,10 @@ async def global_exception_handler(request, exc):
         status_code=500,
         content={"message": "An unexpected error occurred. Please try again later."}
     )
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

@@ -3,3 +3,4 @@ python-multipart
 uvicorn
 scapy~=2.6.1
 matplotlib
+sqlalchemy
