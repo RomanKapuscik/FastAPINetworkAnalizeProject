@@ -70,3 +70,8 @@ This project is a **network traffic monitoring and analysis tool** built with Fa
 
 6. Check the Database:
    Use tools like DB Browser for SQLite or instect the file network_data.db to view stored data.
+
+7. Jak uruchomić GUI
+Uruchom interfejs Streamlit zaktualizowanym plikiem:
+   ````bash
+   streamlit run app.py
