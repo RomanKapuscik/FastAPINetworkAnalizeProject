@@ -1,9 +1,11 @@
+import threading
+
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from scapy.all import sniff
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-
+from continuous_monitor import monitor_network_continuously
 from database import SessionLocal
 from utils import process_pcap, validate_pcap
 from io import BytesIO
@@ -63,7 +65,6 @@ async def visualize_pcap(file: UploadFile = File(...)):
     return StreamingResponse(buffer, media_type="image/png")
 
 
-
 @app.get(
          "/monitor/",
          summary="Monitor network traffic",
@@ -96,9 +97,20 @@ async def global_exception_handler(request, exc):
         content={"message": "An unexpected error occurred. Please try again later."}
     )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
+@app.post("/start-monitoring/")
+def start_monitoring(interface: str = "eth0", db: Session = Depends(get_db)):
+    monitor_thread = threading.Thread(target=monitor_network_continuously, args=(interface, db))
+    monitor_thread.daemon = True
+    monitor_thread.start()
+
+    return {"message": f"Started monitoring network traffic on interface {interface}"}
+
+
+@app.get("/network-traffic/")
+def get_traffic(limit: int = 100, db: Session = Depends(get_db)):
+    packets = db.query(Packet).order_by(Packet.timestamp.desc()).limit(limit).all()
+    return [
+        {"timestamp": pkt.timestamp, "src_ip": pkt.src_ip, "dst_ip": pkt.dst_ip, "protocol": pkt.protocol}
+        for pkt in packets
+    ]
