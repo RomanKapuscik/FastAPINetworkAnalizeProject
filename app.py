@@ -9,7 +9,13 @@ st.title("Network Traffic Monitor & Analyzer")
 
 st.header("Network Monitoring")
 
-interface = st.text_input("Network Interface (e.g., eth0)", value="eth0")
+interfaces_response = requests.get(f"{API_URL}/interfaces/")
+if interfaces_response.status_code == 200:
+    interfaces = interfaces_response.json()
+else:
+    interfaces = ["eth0", "lo"]
+
+interface = st.selectbox("Select Network Interface", interfaces)
 
 col1, col2 = st.columns(2)
 
@@ -43,10 +49,7 @@ if response.status_code == 200:
 else:
     st.error(f"Failed to fetch data: {response.json().get('detail', 'Unknown error')}")
 
-
-# Dynamiczny wykres
 st.header("Traffic Visualization")
-
 
 response = requests.get(f"{API_URL}/network-traffic/?limit=100")
 if response.status_code == 200:
@@ -54,7 +57,7 @@ if response.status_code == 200:
     if data:
 
         df = pd.DataFrame(data)
-        df["timestamp"] = pd.to_datetime(df["timestamp"])  # Konwersja na format datetime
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
 
         chart_type = st.selectbox("Select Chart Type", ["Packets Over Time", "Protocol Distribution"])
 
