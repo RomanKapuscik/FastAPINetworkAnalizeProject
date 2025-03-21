@@ -1,5 +1,5 @@
-
 import platform
+
 import psutil
 from scapy.all import get_if_list, get_if_addr
 
@@ -37,19 +37,7 @@ def get_network_interfaces():
 
     return readable_interfaces
 
+
 # Testing
 if __name__ == "__main__":
-    # interfaces = get_network_interfaces()
-    # print("Available interfaces:")
-    # for iface in interfaces:
-    #     print(iface)
-
-    import os
-    import time
-
-    try:
-        while True:
-            os.system("curl https://8.8.8.8")
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("sending packets done")
+    pass

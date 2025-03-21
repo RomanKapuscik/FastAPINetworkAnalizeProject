@@ -9,4 +9,3 @@ requests~=2.32.3
 pandas~=2.2.3
 plotly~=6.0.1
 psutil~=7.0.0
-# WMI~=1.5.1

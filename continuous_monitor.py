@@ -1,7 +1,8 @@
-from database import Packet
-
 import threading
+
 from scapy.all import sniff
+
+from database import Packet
 
 monitor_thread = None
 stop_monitoring = threading.Event()
@@ -12,12 +13,12 @@ def monitor_network_continuously(interface: str, db_session):
         try:
             src_ip = packet["IP"].src if packet.haslayer("IP") else None
             dst_ip = packet["IP"].dst if packet.haslayer("IP") else None
-            src_mac = packet.src if packet.src else None  # MAC źródła
-            dst_mac = packet.dst if packet.dst else None  # MAC miejsca docelowego
-            length = len(packet)  # Rozmiar pakietu
+            src_mac = packet.src if packet.src else None
+            dst_mac = packet.dst if packet.dst else None
+            length = len(packet)
             src_port = packet.sport if packet.haslayer("TCP") or packet.haslayer("UDP") else None
             dst_port = packet.dport if packet.haslayer("TCP") or packet.haslayer("UDP") else None
-            protocol = packet.name if packet.name else None  # Nazwa protokołu
+            protocol = packet.name if packet.name else None
 
             new_packet = Packet(
                 src_ip=src_ip,

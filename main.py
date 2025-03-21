@@ -1,30 +1,30 @@
+from io import BytesIO
 
+import matplotlib.pyplot as plt
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
-from scapy.all import sniff
 from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
+from scapy.all import sniff
 from sqlalchemy.orm import Session
 
 from continuous_monitor import start_monitoring, stop_monitoring_service
-from utils import process_pcap, validate_pcap
-from io import BytesIO
-import matplotlib.pyplot as plt
-from fastapi.responses import StreamingResponse
 from database import Packet, get_db
-
-
+from utils import process_pcap, validate_pcap
 
 app = FastAPI()
+
 
 @app.get("/")
 def read_root():
     return {"message": "Witaj w analizatorze ruchu sieciowego!"}
+
 
 @app.post(
     "/analyze/",
     summary="Analyze a .pcap file",
     description="This endpoint allows you to upload a .pcap file and analyzes its content. It extracts source IP,"
                 "destination IP, and protocol information."
-        )
+)
 async def analyze_pcap(file: UploadFile = File(...)):
     try:
         content = await file.read()
@@ -48,7 +48,6 @@ async def visualize_pcap(file: UploadFile = File(...)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Tworzenie wykresu
     fig, ax = plt.subplots()
     ax.bar(protocol_counts.keys(), protocol_counts.values(), color=['blue', 'orange', 'green', 'red'])
     ax.set_title("Packet Protocol Distribution")
@@ -64,11 +63,11 @@ async def visualize_pcap(file: UploadFile = File(...)):
 
 
 @app.get(
-         "/monitor/",
-         summary="Monitor network traffic",
-         description="This endpoint captures network packets in real-time on a specified interface. "
-                     "You can specify the number of packets to capture and analyze their details."
-         )
+    "/monitor/",
+    summary="Monitor network traffic",
+    description="This endpoint captures network packets in real-time on a specified interface. "
+                "You can specify the number of packets to capture and analyze their details."
+)
 def monitor_traffic(interface: str = "eth0", count: int = 10, db: Session = Depends(get_db)):
     try:
         packets = sniff(count=count, iface=interface)
@@ -87,7 +86,6 @@ def monitor_traffic(interface: str = "eth0", count: int = 10, db: Session = Depe
     return {"message": f"Captured and saved {count} packets to the database"}
 
 
-
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     return JSONResponse(
@@ -95,13 +93,16 @@ async def global_exception_handler(request, exc):
         content={"message": "An unexpected error occurred. Please try again later."}
     )
 
+
 @app.post("/start-monitoring/")
 def api_start_monitoring(interface: str = "eth0", db: Session = Depends(get_db)):
     return start_monitoring(interface, db)
 
+
 @app.post("/stop-monitoring/")
 def api_stop_monitoring():
     return stop_monitoring_service()
+
 
 @app.get("/network-traffic/")
 def get_traffic(limit: int = 100, db: Session = Depends(get_db)):

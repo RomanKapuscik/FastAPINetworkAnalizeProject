@@ -1,9 +1,12 @@
 import threading
+
 from scapy.all import sniff
+
 from database import Packet
 
 monitor_thread = None
 stop_monitoring = threading.Event()
+
 
 def monitor_network_continuously(interface: str, db_session):
     def process_packet(packet):
@@ -18,8 +21,8 @@ def monitor_network_continuously(interface: str, db_session):
 
     sniff(iface=interface, prn=process_packet, store=False, stop_filter=lambda x: stop_monitoring.is_set())
 
-def start_monitoring(interface: str, db_session):
 
+def start_monitoring(interface: str, db_session):
     global monitor_thread, stop_monitoring
 
     if monitor_thread and monitor_thread.is_alive():
@@ -32,8 +35,8 @@ def start_monitoring(interface: str, db_session):
 
     return {"message": f"Started monitoring network traffic on interface {interface}"}
 
-def stop_monitoring_service():
 
+def stop_monitoring_service():
     global stop_monitoring, monitor_thread
 
     if monitor_thread and monitor_thread.is_alive():

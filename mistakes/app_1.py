@@ -1,7 +1,8 @@
-import streamlit as st
 import pandas as pd
-import requests
 import plotly.express as px
+import requests
+import streamlit as st
+
 from mistakes.monitoring import get_network_interfaces  # Import funkcji mapującej
 
 API_URL = "http://localhost:8000"  # URL backendu

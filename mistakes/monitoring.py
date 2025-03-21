@@ -1,7 +1,8 @@
 import platform
+from difflib import SequenceMatcher
+
 import psutil
 from scapy.all import get_if_list, get_if_addr
-from difflib import SequenceMatcher
 
 
 def similar(a, b):

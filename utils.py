@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from scapy.all import rdpcap
 
+
 def process_pcap(file_content: bytes):
     temp_filename = "temp.pcap"
     with open(temp_filename, "wb") as f:
@@ -25,6 +26,7 @@ def process_pcap(file_content: bytes):
             protocol_counts["Other"] += 1
 
     return packets, protocol_counts
+
 
 def validate_pcap(file):
     if not file.filename.endswith(".pcap"):
