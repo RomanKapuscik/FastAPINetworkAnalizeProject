@@ -3,9 +3,10 @@ python-multipart
 uvicorn
 scapy~=2.6.1
 matplotlib~=3.10.1
-sqlalchemy~=2.0.39
+sqlalchemy
 streamlit~=1.43.2
 requests~=2.32.3
 pandas~=2.2.3
 plotly~=6.0.1
 psutil~=7.0.0
+pymysql

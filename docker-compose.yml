@@ -10,3 +10,21 @@ services:
       - .:/app
       - ./network_data.db:/app/network_data.db
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=testdb
+      - DB_USER=root
+      - DB_PASSWORD=example
+    depends_on:
+      - db
+
+
+  db:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+      MARIADB_DATABASE: testdb
+    ports:
+      - "3306:3306"
